@@ -32,8 +32,8 @@ class Dataset(torch.utils.data.Dataset):
         texts = dataframe[['apiFeatures', 'dropFeatures', 'regFeatures', 'filesFeatures', 'filesEXTFeatures', 'dirFeatures', 'strFeatures']].values
         new_array = []  
         for sublist in texts:  
-             token_text =  tokenizer(sublist.tolist(),padding='max_length',max_length=1024,truncation=True,return_tensors="pt")
-             new_array.append(token_text)  
+             token_text =  tokenizer(sublist.tolist(),padding='max_length',max_length=512,truncation=True,return_tensors="pt") 
+             # O modelo irá consumir tensors de no máximo 512 tokens, se algo ultrapassar disso será truncado
         self.texts = new_array
         self.labels = dataframe['family'].values
         assert len(self.texts) == len(self.labels), '[ERROR] texts count not equal label count.'
