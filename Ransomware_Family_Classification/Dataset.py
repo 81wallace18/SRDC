@@ -1,11 +1,15 @@
 import torch
-from transformers import GPT2Model, GPT2Tokenizer
+from transformers import AutoTokenizer
 import pandas as pd
 import numpy as np
 
-tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased') #Usa o tonkenizador padrão de qualquer modelo dito
 tokenizer.padding_side = "right"
 tokenizer.pad_token = tokenizer.eos_token
+if tokenizer.pad_token is None:
+    # Adiciona um novo token de padding ao tokenizador
+    tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+    print(f"Novo token de padding '[PAD]' adicionado.")
 labels = {
         "Goodware": 0,
         "Critroni": 1,

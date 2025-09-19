@@ -1,6 +1,6 @@
 import sys
 import os
-from Dataset import Dataset
+from Dataset import Dataset, tokenizer
 from LSTM.Model import Classifier
 from sklearn.model_selection import KFold
 from sklearn.metrics import f1_score, recall_score
@@ -15,7 +15,6 @@ from torch.optim import Adam
 from transformers import GPT2Model, GPT2Tokenizer
 from tqdm import tqdm 
 from sklearn.model_selection import StratifiedKFold
-
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.metrics import ConfusionMatrixDisplay
@@ -39,7 +38,10 @@ def kfold_cross_validation(df, LR, EPOCHS, k_folds):
     fold = 0
     for train_idx, test_idx in skf.split(X, y):
         fold += 1
-        model = Classifier(hidden_size=768, num_classes=12, max_seq_len=1024, gpt_model_name="/home/z50036508/pooling_model/gpt2", compression_ratio=1024)
+        model = Classifier(hidden_size=768, num_classes=12, max_seq_len=1024, model_name="bert-base-uncased", compression_ratio=1024)
+        
+        model.llm_encoder.resize_token_embeddings(len(tokenizer))
+        
         print(f"Fold {fold}/{k_folds}")
         
         with open('result.txt', 'a') as f:

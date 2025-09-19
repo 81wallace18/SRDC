@@ -3,7 +3,7 @@ import pandas as pd
 import random
 import argparse
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # type: ignore
 
 
 def reformat_registry_text(input_text):
@@ -109,10 +109,6 @@ def parseFILES(origin_str):
     for str in result:
         path_way=path_way+str    
     return (prefix+path_way)
-
-
-
-
 
 def main():
     args = get_args()
