@@ -9,7 +9,7 @@ tokenizer.pad_token = tokenizer.eos_token
 if tokenizer.pad_token is None:
     # Adiciona um novo token de padding ao tokenizador
     tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-    print(f"Novo token de padding '[PAD]' adicionado.")
+
 labels = {
         "Goodware": 0,
         "Critroni": 1,
@@ -32,8 +32,9 @@ class Dataset(torch.utils.data.Dataset):
         texts = dataframe[['apiFeatures', 'dropFeatures', 'regFeatures', 'filesFeatures', 'filesEXTFeatures', 'dirFeatures', 'strFeatures']].values
         new_array = []  
         for sublist in texts:  
-             token_text =  tokenizer(sublist.tolist(),padding='max_length',max_length=512,truncation=True,return_tensors="pt") 
-             # O modelo irá consumir tensors de no máximo 512 tokens, se algo ultrapassar disso será truncado
+            token_text = tokenizer(sublist.tolist(),padding='max_length',max_length=512,truncation=True,return_tensors="pt") 
+            #o Tensor máximo do bert é 512
+            new_array.append(token_text)
         self.texts = new_array
         self.labels = dataframe['family'].values
         assert len(self.texts) == len(self.labels), '[ERROR] texts count not equal label count.'

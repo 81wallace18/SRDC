@@ -1,6 +1,6 @@
 import torch
 from torch import nn 
-from transformers import AutoModel # <-- MUDANÇA
+from transformers import AutoModel
 
 class Classifier(nn.Module):
     def __init__(self, hidden_size: int, num_classes:int ,max_seq_len:int, model_name:str, compression_ratio:int):

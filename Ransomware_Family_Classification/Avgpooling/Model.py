@@ -1,21 +1,19 @@
-# Arquivo: Model_AvgPool.py (exemplo de nome)
 import torch
 from torch import nn 
-from transformers import AutoModel # <-- MUDANÇA
+from transformers import AutoModel
 
 class Classifier(nn.Module):
     def __init__(self, hidden_size: int, num_classes:int ,max_seq_len:int, model_name:str, compression_ratio:int):
         super(Classifier,self).__init__()
         # Carrega o LLM base (BERT, RoBERTa, etc.) de forma genérica
-        self.llm_encoder = AutoModel.from_pretrained(model_name) # <-- MUDANÇA
+        self.llm_encoder = AutoModel.from_pretrained(model_name)
         
-        # A camada específica deste modelo é mantida
         self.pooling = nn.AdaptiveAvgPool1d(compression_ratio)
         
         self.fc1 = nn.Linear(compression_ratio*max_seq_len*7, num_classes)
         
     def forward(self, input_id, mask):
-        # ... O método forward() é idêntico ao exemplo do MaxPool
+
         input_ids = torch.split(input_id, 1, dim=1)
         masks = torch.split(mask, 1, dim=1)
         concatenated_sub_tensors = []
@@ -26,7 +24,7 @@ class Classifier(nn.Module):
             last_hidden_state = model_output[0]
             
             # Aplica o pooling específico deste modelo
-            pooled_output = self.pooling(last_hidden_state) # <-- Sem mudança aqui
+            pooled_output = self.pooling(last_hidden_state)
             
             concatenated_sub_tensors.append(pooled_output)
         
