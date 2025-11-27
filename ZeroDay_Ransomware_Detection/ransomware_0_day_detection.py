@@ -1,4 +1,3 @@
-from Dataset import Dataset
 from LSTM.Model import Classifier
 from sklearn.model_selection import KFold
 from sklearn.metrics import f1_score, recall_score
@@ -13,7 +12,7 @@ from torch.optim import Adam
 from transformers import GPT2Model, GPT2Tokenizer
 from tqdm import tqdm 
 from sklearn.model_selection import StratifiedKFold
-
+from Dataset import Dataset
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.metrics import ConfusionMatrixDisplay
@@ -43,11 +42,14 @@ def main() :
         "TeslaCrypt": 10,
         "Trojan-Ransom": 11
             }
-
-
-
         
-    model = Classifier(hidden_size=768, num_classes=2, max_seq_len=1024, gpt_model_name="RDC-GPT",compression_ratio=128)
+    model = Classifier(
+    hidden_size=768, 
+    num_classes=12, 
+    max_seq_len=1024, 
+    bert_model_name="bert-base-uncased", # Use um nome válido do HuggingFace
+    compression_ratio=128 # ou o valor que desejar
+    )
     LR = 1e-5
     EPOCHS = 20  
     train(model, df_train, df_test, LR, EPOCHS)

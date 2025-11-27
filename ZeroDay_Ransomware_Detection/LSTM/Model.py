@@ -1,12 +1,15 @@
 import torch
 from torch import nn 
-from transformers import GPT2Model, GPT2Tokenizer
+from transformers import BertModel, BertTokenizer # Alterado para BERT
 
 class Classifier(nn.Module):
-    def __init__(self, hidden_size: int, num_classes:int ,max_seq_len:int, gpt_model_name:str, compression_ratio:int):
+    def __init__(self, hidden_size: int, num_classes:int ,max_seq_len:int, bert_model_name:str, compression_ratio:int):
         super(Classifier,self).__init__()
-        self.gpt2model = GPT2Model.from_pretrained(gpt_model_name)
-        self.lstm = nn.LSTM(hidden_size = compression_ratio,input_size = 768, num_layers =1,
+        # Carrega o modelo BERT
+        self.bert_model = BertModel.from_pretrained(bert_model_name)
+        
+        # input_size=768 assume BERT Base. 
+        self.lstm = nn.LSTM(hidden_size=compression_ratio, input_size=768, num_layers=1,
                             batch_first=True)
         self.fc1 = nn.Linear(compression_ratio*7, num_classes)
         
@@ -22,10 +25,15 @@ class Classifier(nn.Module):
             
             sub_input_id = sub_input_id.squeeze(1)
             
-            gpt_out, _ = self.gpt2model(input_ids=sub_input_id, attention_mask=sub_mask, return_dict=False)
+            # Passando pelo BERT
+            bert_out, _ = self.bert_model(input_ids=sub_input_id, attention_mask=sub_mask, return_dict=False)
 
-            gpt_out_pooling, _ = self.lstm(gpt_out)
-            concatenated_sub_tensors.append(gpt_out_pooling[:, -1, :])
+            # O LSTM processa a saída do BERT
+            bert_out_lstm, _ = self.lstm(bert_out)
+            
+            # Pega o último estado oculto da sequência
+            concatenated_sub_tensors.append(bert_out_lstm[:, -1, :])
+            
         result = torch.cat(concatenated_sub_tensors, dim=1)
         linear_output = self.fc1(result)
         return linear_output
