@@ -95,6 +95,7 @@ celerybeat.pid
 
 # Environments
 .env
+.venv
 env/
 venv/
 ENV/
@@ -147,7 +148,7 @@ Thumbs.db
 *.model
 
 # Data files (comment out if you want to track data)
-*.csv
+#*.csv
 *.json
 *.parquet
 *.feather
