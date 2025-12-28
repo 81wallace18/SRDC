@@ -1,62 +1,58 @@
 import pandas as pd
-import numpy as np
+from sklearn.utils import shuffle
 
-# Carrega seu CSV arrumado
-df = pd.read_csv('/home/hugo/Projects/SRDC/after_feature_internal_semantic_process_data.csv', sep=',')
+# 1. Carregar seu dataset completo
+# Ajuste o caminho conforme necessário
+df = pd.read_csv('/home/hugo_martins/SRDC/Feature_Internal_Semantic_Processing/after_feature_internal_semantic_process_data.csv')
 
-print(f"Dataset original: {df.shape[0]} amostras")
+# Mapeamento baseado no seu código main.py
+# Goodware: 0
+# Seen (Treino): 1, 2, 3, 4, 5, 6, 7
+# Unseen (Teste): 8, 9, 10, 11
 
-# Função para criar texto para BERT a partir das features existentes
-def create_bert_text(row):
-    """Combina as features existentes em texto para BERT"""
-    text_parts = []
+seen_families = [1, 2, 3, 4, 5, 6, 7] 
+unseen_families = [8, 9, 10, 11]
 
-    # Adiciona API Features se existir e não for vazia
-    if 'apiFeatures' in row and pd.notna(row['apiFeatures']) and str(row['apiFeatures']).strip():
-        text_parts.append(str(row['apiFeatures']))
+# 2. Separar Goodware e Ransomware
+df_goodware = df[df['family'] == 0]
+df_seen_ransom = df[df['family'].isin(seen_families)]
+df_unseen_ransom = df[df['family'].isin(unseen_families)]
 
-    # Adiciona Registry Features se existir e não for vazia
-    if 'regFeatures' in row and pd.notna(row['regFeatures']) and str(row['regFeatures']).strip():
-        text_parts.append(str(row['regFeatures']))
+# 3. Configurar Quantidades conforme o texto (Section 5.4)
+# O texto pede:
+# Treino: 448 seen ransomware + 808 goodware
+# Teste: 134 unseen ransomware + 134 goodware
 
-    # Adiciona File Features se existir e não for vazia
-    if 'filesFeatures' in row and pd.notna(row['filesFeatures']) and str(row['filesFeatures']).strip():
-        text_parts.append(str(row['filesFeatures']))
+# Vamos tentar pegar amostras exatas, ou tudo se você tiver menos dados
+# Goodware para treino
+train_good = df_goodware.sample(n=min(808, len(df_goodware)), random_state=42)
+# O restante do goodware fica disponível para teste, mas precisamos garantir que não haja vazamento
+df_goodware_remaining = df_goodware.drop(train_good.index)
+test_good = df_goodware_remaining.sample(n=min(134, len(df_goodware_remaining)), random_state=42)
 
-    # Adiciona String Features se existir e não for vazia
-    if 'strFeatures' in row and pd.notna(row['strFeatures']) and str(row['strFeatures']).strip():
-        text_parts.append(str(row['strFeatures']))
+# Ransomware
+train_ransom = df_seen_ransom.sample(n=min(448, len(df_seen_ransom)), random_state=42)
+test_ransom = df_unseen_ransom.sample(n=min(134, len(df_unseen_ransom)), random_state=42)
 
-    # Retorna o texto combinado ou texto padrão se não houver features
-    return " ".join(text_parts) if text_parts else "empty features"
+# 4. Concatenar e Salvar
+train_final = pd.concat([train_good, train_ransom])
+test_final = pd.concat([test_good, test_ransom])
 
-# Adiciona coluna bert_text no final para manter formatação original
-df['bert_text'] = df.apply(create_bert_text, axis=1)
+# Embaralhar para o treino não ficar ordenado
+train_final = shuffle(train_final, random_state=42)
+test_final = shuffle(test_final, random_state=42)
 
-print(f"Texto BERT criado para todas as {df.shape[0]} amostras")
+train_final.to_csv('train.csv', index=False)
+test_final.to_csv('test.csv', index=False)
 
-# LÓGICA DE ZERO DAY:
-# Vamos treinar com todas as famílias, EXCETO a família 11 (exemplo)
-# A família 11 será a "desconhecida" (Zero Day)
+# ... (seu código acima) ...
 
-# 1. Cria o Dataset de TREINO (Famílias conhecidas + Goodware)
-# Exclui a família 11
-df_train = df[df['family'] != 11]
+print("\n--- Validação Final ---")
+print("Famílias presentes no TREINO (Deve ser 0 a 7):")
+print(train_final['family'].unique())
 
-# 2. Cria o Dataset de TESTE (Apenas a família 11 + Alguns Goodwares para controle)
-# Pega apenas a família 11
-df_zero_day = df[df['family'] == 11]
-# Pega alguns goodwares (família 0) para o teste não ser só vírus
-# Limita ao número disponível de goodwares
-num_goodware = min(50, len(df[df['family'] == 0]))
-df_goodware_test = df[df['family'] == 0].sample(n=num_goodware, random_state=42)
-df_test = pd.concat([df_zero_day, df_goodware_test])
+print("\nFamílias presentes no TESTE (Deve ser 0, 8, 9, 10, 11):")
+print(test_final['family'].unique())
 
-# Salva os arquivos mantendo a formatação original + a nova coluna bert_text
-df_train.to_csv('train_zeroday.csv', index=False)
-df_test.to_csv('test_zeroday.csv', index=False)
-
-print(f"\nArquivos criados:")
-print(f"✓ train_zeroday.csv: {len(df_train)} amostras (todas as famílias exceto a 11)")
-print(f"✓ test_zeroday.csv: {len(df_test)} amostras ({len(df_zero_day)} Zero Day + {len(df_goodware_test)} Goodware)")
-print(f"\nColuna 'bert_text' adicionada no final mantendo formatação original")
+print(f"Treino gerado: {len(train_final)} amostras.")
+print(f"Teste (Zero-Day) gerado: {len(test_final)} amostras.")

@@ -45,7 +45,7 @@ def main() :
         
     model = Classifier(
     hidden_size=768,
-    num_classes=11, 
+    num_classes=2, 
     max_seq_len=1024,
     bert_model_name="bert-base-uncased", # Use um nome válido do HuggingFace
     compression_ratio=128 # ou o valor que desejar
@@ -58,7 +58,7 @@ def train(model, train_data, test_data, learning_rate, epochs):
     train = Dataset(train_data)
 
     # Batch size aumentado para melhor estabilidade e performance
-    train_dataloader = torch.utils.data.DataLoader(train, batch_size=16, shuffle=True)
+    train_dataloader = torch.utils.data.DataLoader(train, batch_size=4, shuffle=True)
 
     
     use_cuda = torch.cuda.is_available()
@@ -137,7 +137,7 @@ def evaluate(model, test_data):
 
     test = Dataset(test_data)
 
-    test_dataloader = torch.utils.data.DataLoader(test, batch_size=16)
+    test_dataloader = torch.utils.data.DataLoader(test, batch_size=4)
 
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
@@ -184,4 +184,3 @@ def get_args():
 
 if __name__ == "__main__":
     main()
-    print("Teste")
