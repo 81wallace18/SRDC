@@ -73,8 +73,12 @@ def train(model, train_data, test_data, learning_rate, epochs, fold):
         
         for train_input, train_label in tqdm(train_dataloader):
             train_label = train_label.to(device)
-            mask = train_input['attention_mask'].to(device)
-            input_id = train_input["input_ids"].squeeze(1).to(device)
+            
+            # Reshape inputs to be 2D [batch_size, sequence_length] and truncate to max_seq_len
+            current_batch_size = train_input['input_ids'].shape[0]
+            input_id = train_input["input_ids"].view(current_batch_size, -1)[:, :512].to(device)
+            mask = train_input['attention_mask'].view(current_batch_size, -1)[:, :512].to(device)
+
             model.zero_grad()
             output = model(input_id, mask)
             
@@ -151,8 +155,11 @@ def evaluate(model, test_data):
         for test_input, test_label in test_dataloader:
 
             test_label = test_label.to(device)
-            mask = test_input['attention_mask'].to(device)
-            input_id = test_input['input_ids'].squeeze(1).to(device)
+
+            # Reshape inputs to be 2D [batch_size, sequence_length] and truncate to max_seq_len
+            current_batch_size = test_input['input_ids'].shape[0]
+            input_id = test_input['input_ids'].view(current_batch_size, -1)[:, :512].to(device)
+            mask = test_input['attention_mask'].view(current_batch_size, -1)[:, :512].to(device)
 
             output = model(input_id, mask)
 

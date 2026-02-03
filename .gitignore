@@ -1,8 +1,11 @@
 # Python cache files
 __pycache__/
+*__pycache__/
 *.py[cod]
 *$py.class
 *.so
+
+data/
 
 # Distribution / packaging
 .Python
@@ -101,6 +104,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+srdc/
 
 # Spyder project settings
 .spyderproject
