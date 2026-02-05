@@ -24,6 +24,7 @@ class Classifier(nn.Module):
         for sub_input_id, sub_mask in zip(input_ids, masks):
             
             sub_input_id = sub_input_id.squeeze(1)
+            sub_mask = sub_mask.squeeze(1)
             
             # Passando pelo BERT
             bert_out, _ = self.bert_model(input_ids=sub_input_id, attention_mask=sub_mask, return_dict=False)

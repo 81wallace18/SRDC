@@ -58,7 +58,7 @@ def train(model, train_data, test_data, learning_rate, epochs):
     train = Dataset(train_data)
 
     # Batch size aumentado para melhor estabilidade e performance
-    train_dataloader = torch.utils.data.DataLoader(train, batch_size=4, shuffle=True)
+    train_dataloader = torch.utils.data.DataLoader(train, batch_size=1, shuffle=True)
 
     
     use_cuda = torch.cuda.is_available()
