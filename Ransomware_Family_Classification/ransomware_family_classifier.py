@@ -38,8 +38,12 @@ def kfold_cross_validation(df, LR, EPOCHS, k_folds):
     fold = 0
     for train_idx, test_idx in skf.split(X, y):
         fold += 1
-        model = Classifier(hidden_size=768, num_classes=12, max_seq_len=512, model_name="bert-base-uncased", compression_ratio=1024)
-        
+        model = Classifier(hidden_size=896,
+                           num_classes=12, 
+                           max_seq_len=1024, 
+                           model_name="Qwen/Qwen2.5-0.5B", 
+                           compression_ratio=1024)
+
         model.llm_encoder.resize_token_embeddings(len(tokenizer))
         
         print(f"Fold {fold}/{k_folds}")

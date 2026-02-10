@@ -12,7 +12,7 @@ from torch.optim import Adam
 from transformers import GPT2Model, GPT2Tokenizer
 from tqdm import tqdm 
 from sklearn.model_selection import StratifiedKFold
-from Dataset import Dataset
+from Dataset import Dataset, tokenizer
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.metrics import ConfusionMatrixDisplay
@@ -44,12 +44,18 @@ def main() :
             }
         
     model = Classifier(
-    hidden_size=768,
+    hidden_size=896,
     num_classes=2, 
     max_seq_len=1024,
-    bert_model_name="bert-base-uncased", # Use um nome válido do HuggingFace
+    model_name="Qwen/Qwen2.5-0.5B", # Use um nome válido do HuggingFace
     compression_ratio=128 # ou o valor que desejar
     )
+
+    # CONCEITO: Ativar Gradient Checkpointing para economizar VRAM
+    model.llm_encoder.gradient_checkpointing_enable()
+    # CONCEITO: Garantir que o tamanho das embeddings condiz com o tokenizador (incluindo PAD tokens novos)
+    model.llm_encoder.resize_token_embeddings(len(tokenizer))
+
     LR = 1e-5
     EPOCHS = 20  
     train(model, df_train, df_test, LR, EPOCHS)
@@ -60,7 +66,6 @@ def train(model, train_data, test_data, learning_rate, epochs):
     # Batch size aumentado para melhor estabilidade e performance
     train_dataloader = torch.utils.data.DataLoader(train, batch_size=1, shuffle=True)
 
-    
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
     

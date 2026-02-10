@@ -7,6 +7,7 @@ class Classifier(nn.Module):
         super(Classifier,self).__init__()
         # Carrega o LLM base (BERT, RoBERTa, etc.) de forma genérica
         self.llm_encoder = AutoModel.from_pretrained(model_name)
+        self.llm_encoder = self.llm_encoder
         
         # Camada de pooling para transformar a saída do BERT em um único vetor por amostra.
         # Ele irá calcular a média dos vetores de todos os tokens na sequência.
@@ -35,6 +36,10 @@ class Classifier(nn.Module):
         # Shape da saída: [batch_size, hidden_size]
         squeezed_output = pooled_output.squeeze(-1)
         
+        # Garante que a entrada da linear tenha o mesmo tipo dos pesos da linear
+        # Isso corrige o erro BFloat16 vs Float sem converter o modelo inteiro
+        squeezed_output = squeezed_output.to(self.fc1.weight.dtype)
+
         # Passa o vetor de características pela camada linear para obter os logits da classificação.
         linear_output = self.fc1(squeezed_output)
         
